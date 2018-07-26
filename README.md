@@ -41,10 +41,10 @@ gulp.task('sass', () => {
 
 ### SCSS input
 ```css
-:root { --browser-version : $browser-version; }
+:root { --browser-version : #{$browser-version}; }
 body {
-  background-image:url($images + 'wallpaper.jpg');
-  max-height:$max-height;
+  background-image:url(#{$images} + 'wallpaper.jpg');
+  max-height:#{$max-height};
 }
 ```
 
