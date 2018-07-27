@@ -56,3 +56,29 @@ body {
   max-height:100vh;
 }
 ```
+### Bonus feature
+You can also pass in nested objects, which will resolve to a Sass Map.
+
+```js
+
+let variables = {
+  'images':'../assets/images/',
+  'max-height':'100vh',
+  'browser-version':11,
+  'themes' : {
+    'primary' : '#FFF8DC',
+    'secondary' : '#EFF0F1'
+  }
+}
+```
+
+### SCSS
+
+```css
+$images : (
+  primary : '#FFF8DC',
+  secondary : '#EFF0F1'
+);
+```
+
+Remember, this map and other variables are not stored into a file that you can read with your eyes. It's entirely dynamic.
