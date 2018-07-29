@@ -6,8 +6,6 @@ Inject Javascript variables as SCSS variables before compiling during a pipe tas
 Basically the same principle as [Postilabs](https://github.com/positlabs/inject-scss#readme) Inject SCSS page,
 only this variation works within streams/pipes. So you can inject variables directly before your SCSS compilation.
 
-Gulp Inject SCSS also checks wether a given string is a valid CSS unit, and omits any quotations if it should resolve to a unit (i.e. 10px)
-
 So you could use this to respect environment paths that differ between development and production servers for example. Or keep unit sizes consistent between Javascript and CSS. Or maybe you just need to define a special custom property bespoke to your needs.
 
 ### Installation
@@ -26,7 +24,7 @@ const gulpsass    = require('gulp-sass'),
       injectScss  = require('gulp-inject-scss');
 
 let variables = {
-  'images':'../assets/images/',
+  'images':'"../assets/images/"',
   'max-height':'100vh',
   'browser-version':11,
 }
@@ -52,7 +50,7 @@ body {
 ```css
 :root { --browser-version : 11; }
 body {
-  background-image:url('../assets/images/wallpaper.jpg');
+  background-image:url(../assets/images/wallpaper.jpg);
   max-height:100vh;
 }
 ```
@@ -62,7 +60,7 @@ You can also pass in nested objects, which will resolve to a Sass Map.
 ```js
 
 let variables = {
-  'images':'../assets/images/',
+  'images':'"../assets/images/"',
   'max-height':'100vh',
   'browser-version':11,
   'themes' : {

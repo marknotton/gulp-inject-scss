@@ -13,9 +13,6 @@ var stream = function(injectMethod){
   });
 };
 
-var units = ["em", "ex", "%", "px", "cm", "mm", "in", "pt", "pc", "ch", "rem",
-						 "vh", "vw", "vmin", "vmax", "cm", "mm", "in", "px", "pt", "pc"];
-
 module.exports = function(variables){
 
 
@@ -27,17 +24,12 @@ module.exports = function(variables){
 		if ( typeof value !== 'undefined') {
 
       if ( typeof value === 'object' ) {
+
         result = objectToMap(value);
 
       } else {
 
-        // Check if the value is a string, and has a unit at the end of it.
-  			// If it does, don't wrap it with quotations
-  			let unitCheck = units.some((suffix) => {
-  				return isNaN(value) ? value.endsWith(suffix) : false;
-  			});
-
-  			result = isNaN(value) && !unitCheck ? `"${value}"` : `${value}`;
+  			result = `${value}`;
 
       }
 
@@ -62,16 +54,8 @@ function objectToMap(obj_from_json){
   // but without quotes around the keys.
   let props = Object.keys(obj_from_json).map(key => {
     let value = obj_from_json[key];
-
-    // Check if the value is a string, and has a unit at the end of it.
-    // If it does, don't wrap it with quotations
-    let unitCheck = units.some((suffix) => {
-      return isNaN(value) ? value.endsWith(suffix) : false;
-    });
-
-    let result = isNaN(value) && !unitCheck ? `"${value}"` : `${value}`;
-
-    return `${key}:${result}`
+    return `${key}:${value}`
   }).join(",");
+
   return `(${props})`;
 }
