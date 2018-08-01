@@ -73,7 +73,7 @@ let variables = {
 ### SCSS
 
 ```css
-$images : (
+$themes : (
   primary : '#FFF8DC',
   secondary : '#EFF0F1'
 );
