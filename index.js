@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////////
+// Inject SCSS
+////////////////////////////////////////////////////////////////////////////////
+
 'use strict'
 
 var es = require('event-stream');
@@ -15,7 +19,6 @@ var stream = function(injectMethod){
 
 module.exports = function(variables){
 
-
 	var string = Object.keys(variables).map(key => {
 
 		let value = variables[key];
@@ -25,14 +28,23 @@ module.exports = function(variables){
 
       if ( typeof value === 'object' ) {
 
-        result = objectToMap(value);
+        // @see https://stackoverflow.com/questions/11233498/json-stringify-without-quotes-on-properties
+
+        if(typeof json !== "object" || Array.isArray(json)){
+           // not an object, stringify using native function
+          return JSON.stringify(json);
+        }
+
+        let props = Object.keys(json).map(key => {
+          let value = json[key];
+          return `${key}:${value}`
+        }).join(",");
+
+        result = `(${props})`;
 
       } else {
-
   			result = `${value}`;
-
       }
-
 		}
 
     return `$${key}: ${result};`;
@@ -42,20 +54,4 @@ module.exports = function(variables){
 	return stream(function(fileContents){
 		return String(string) + fileContents;
 	});
-}
-
-// see https://stackoverflow.com/questions/11233498/json-stringify-without-quotes-on-properties
-function objectToMap(obj_from_json){
-  if(typeof obj_from_json !== "object" || Array.isArray(obj_from_json)){
-     // not an object, stringify using native function
-    return JSON.stringify(obj_from_json);
-  }
-  // Implements recursive object serialization according to JSON spec
-  // but without quotes around the keys.
-  let props = Object.keys(obj_from_json).map(key => {
-    let value = obj_from_json[key];
-    return `${key}:${value}`
-  }).join(",");
-
-  return `(${props})`;
 }
