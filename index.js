@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Inject SCSS
+// Sass Inject
 ////////////////////////////////////////////////////////////////////////////////
 
 'use strict'
@@ -17,41 +17,89 @@ var stream = function(injectMethod){
   });
 };
 
-module.exports = function(variables){
+module.exports = function(){
 
-	var string = Object.keys(variables).map(key => {
+	if (arguments.length == 0) {
+		return '';
+	}
 
-		let value = variables[key];
-    let result = null;
+	let variables = null;
+	let imports = null;
 
-		if ( typeof value !== 'undefined') {
+	// Asign the inject type variable by running through all arguments passed.
+	for (var argument of arguments) {
+		if (Array.isArray(argument)) {
+			imports = argument;
+		} else {
+			variables = argument;
+		}
+	}
 
-      if ( typeof value === 'object' ) {
+	// Manage Variables ----------------------------------------------------------
 
-        // @see https://stackoverflow.com/questions/11233498/json-stringify-without-quotes-on-properties
+	var variablesString = () => {
 
-        if(typeof json !== "object" || Array.isArray(json)){
-           // not an object, stringify using native function
-          return JSON.stringify(json);
-        }
-
-        let props = Object.keys(json).map(key => {
-          let value = json[key];
-          return `${key}:${value}`
-        }).join(",");
-
-        result = `(${props})`;
-
-      } else {
-  			result = `${value}`;
-      }
+		if ( !variables ) {
+			return '';
 		}
 
-    return `$${key}: ${result};`;
+		return Object.keys(variables).map(key => {
 
-	}).join('\n')
+			let value = variables[key];
+	    let result = null;
+
+			if ( typeof value !== 'undefined') {
+
+	      if ( typeof value === 'object' ) {
+
+					if(Array.isArray(value)){
+						 // not an object, stringify using native function
+						return JSON.stringify(value);
+					}
+					// Implements recursive object serialization according to JSON spec
+					// but without quotes around the keys.
+					let props = Object.keys(value).map(key => {
+						let value = value[key];
+						return `${key}:${value}`
+					}).join(",");
+
+					result = `(${props})`;
+
+	      } else {
+
+	  			result = `${value}`;
+
+	      }
+
+			}
+
+	    return `$${key}: ${result};`;
+
+		}).join('\n')
+
+	}
+
+	// Manage Imports ------------------------------------------------------------
+
+	var importsString = () => {
+
+		if ( !imports ) {
+			return '';
+		}
+
+		let result = [];
+
+		imports.forEach(function (value) {
+			result.push(`@import "${value}";`);
+		});
+
+		return result.join('\n');
+
+	}
+
+	// Return Stream Data --------------------------------------------------------
 
 	return stream(function(fileContents){
-		return String(string) + fileContents;
+		return String(importsString()) + String(variablesString()) + fileContents;
 	});
 }
