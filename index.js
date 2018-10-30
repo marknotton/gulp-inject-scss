@@ -75,7 +75,7 @@ module.exports = function(){
 
 	    return `$${key}: ${result};`;
 
-		}).join('\n')
+		}).join(' ')
 
 	}
 
@@ -93,7 +93,7 @@ module.exports = function(){
 			result.push(`@import "${value}";`);
 		});
 
-		return result.join('\n');
+		return result.join(' ');
 
 	}
 
