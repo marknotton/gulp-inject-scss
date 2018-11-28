@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/marknotton/gulp-inject-scss",
   "dependencies": {
-    "event-stream": "^3.1.7"
+    "event-stream": "3.3.4"
   }
 }
