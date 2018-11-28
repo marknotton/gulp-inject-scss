@@ -1,6 +1,6 @@
 {
   "name": "gulp-inject-scss",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Transpile Javascript variables into SCSS variables during the pipe task.",
   "main": "index.js",
   "scripts": {
