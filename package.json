@@ -1,26 +1,29 @@
 {
-  "name": "gulp-inject-scss",
-  "version": "0.0.7",
-  "description": "Transpile Javascript variables into SCSS variables during the pipe task.",
+  "name": "@marknotton/inject-scss",
+  "version": "1.1.0",
+  "description": "Inject Javascript variables into your SASS/SCSS during the Gulp task within pipes.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marknotton/gulp-inject-scss.git"
+    "url": "git+https://github.com/marknotton/inject-scss.git"
   },
   "keywords": [
     "gulp",
-    ".env"
+    "sass",
+    "scss",
+    "inject"
   ],
+	"dependencies": {
+		"event-stream": "3.3.4"
+	},
   "author": "Mark Notton",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/marknotton/gulp-inject-scss/issues"
+    "url": "https://github.com/marknotton/inject-scss/issues"
   },
-  "homepage": "https://github.com/marknotton/gulp-inject-scss",
-  "dependencies": {
-    "event-stream": "^3.1.7"
-  }
+  "homepage": "https://github.com/marknotton/inject-scss"
+
 }
