@@ -4,7 +4,8 @@
 
 'use strict'
 
-var es = require('event-stream');
+const es   = require('event-stream');
+const glob = require("fast-glob");
 
 var stream = function(injectMethod){
   return es.map(function (file, cb) {
@@ -17,89 +18,96 @@ var stream = function(injectMethod){
   });
 };
 
+let first = true;
+
+let variables = null;
+let imports = null;
+let path = null;
+
 module.exports = function(){
 
 	if (arguments.length == 0) {
 		return '';
 	}
 
-	let variables = null;
-	let imports = null;
+	path = String(Object.values(arguments).filter(argument => typeof argument == 'string'));
 
 	// Asign the inject type variable by running through all arguments passed.
 	for (var argument of arguments) {
 		if (Array.isArray(argument)) {
-			imports = argument;
-		} else {
-			variables = argument;
+			imports =  String(getImports(argument));
+		} else if (typeof argument != 'string') {
+			variables = String(getVariables(argument));
 		}
-	}
-
-	// Manage Variables ----------------------------------------------------------
-
-	var variablesString = () => {
-
-		if ( !variables ) {
-			return '';
-		}
-
-		return Object.keys(variables).map(key => {
-
-			let value = variables[key];
-	    let result = null;
-
-			if ( typeof value !== 'undefined') {
-
-	      if ( typeof value === 'object' ) {
-
-					if(Array.isArray(value)){
-						 // not an object, stringify using native function
-						return JSON.stringify(value);
-					}
-					// Implements recursive object serialization according to JSON spec
-					// but without quotes around the keys.
-					let props = Object.keys(value).map(key => {
-						let value = value[key];
-						return `${key}:${value}`
-					}).join(",");
-
-					result = `(${props})`;
-
-	      } else {
-
-	  			result = `${value}`;
-
-	      }
-
-			}
-
-	    return `$${key}: ${result};`;
-
-		}).join(' ')
-
-	}
-
-	// Manage Imports ------------------------------------------------------------
-
-	var importsString = () => {
-
-		if ( !imports ) {
-			return '';
-		}
-
-		let result = [];
-
-		imports.forEach(function (value) {
-			result.push(`@import "${value}";`);
-		});
-
-		return result.join(' ');
-
 	}
 
 	// Return Stream Data --------------------------------------------------------
 
 	return stream(function(fileContents){
-		return String(importsString()) + String(variablesString()) + fileContents;
+		return variables + imports + fileContents;
 	});
+}
+
+
+// Manage Variables ----------------------------------------------------------
+
+function getVariables(variables) {
+
+	if ( !variables ) {
+		return '';
+	}
+
+	return Object.keys(variables).map(key => {
+
+		let value = variables[key];
+		let result = null;
+
+		if ( typeof value !== 'undefined') {
+
+			if ( typeof value === 'object' ) {
+
+				if(Array.isArray(value)){
+					 // not an object, stringify using native function
+					return JSON.stringify(value);
+				}
+				// Implements recursive object serialization according to JSON spec
+				// but without quotes around the keys.
+				let props = Object.keys(value).map(key => {
+					let value = value[key];
+					return `${key}:${value}`
+				}).join(",");
+
+				result = `(${props})`;
+
+			} else {
+
+				result = `${value}`;
+
+			}
+
+		}
+
+		return `$${key}: ${result};`;
+
+	}).join(' ')
+
+}
+
+// Manage Imports ------------------------------------------------------------
+
+function getImports(imports) {
+
+	let files = glob.sync(imports, {
+		transform : (file) => file.replace(path, '').replace('_','').split('.').slice(0, -1).join('.')
+	});
+
+	let noneGlobbedImports = imports.filter(file => !(/(\!|\*)/.test(file)));
+
+	files = [...noneGlobbedImports, ...files];
+
+	let importString = "@import '" + files.join("', '") + "';"
+
+	return importString;
+
+
 }
