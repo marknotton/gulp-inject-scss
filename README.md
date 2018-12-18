@@ -1,3 +1,4 @@
+
 # Inject SCSS
 
 ![Made For NPM](https://img.shields.io/badge/Made%20for-NPM-orange.svg) ![Made For Gulp](https://img.shields.io/badge/Made%20for-Gulp-red.svg)
@@ -82,14 +83,15 @@ $themes : (
 
 ## Injecting Imports
 
-Pass an array of strings (as-apposed to an object like above) to render each string as an css @import. The example below will grab all scss files that are prefixed with an underscore. Paths that have no Glob syntax (like ! or *) will be added to the import array regardless of wether the file exists. This is intended to give you better control of files that aren't matched in the glob.  We also can pass in a standard string which will be referred to as the paths relative root. This will be truncated from each path so they are relative to your scss file.
+Pass an array of strings (as-apposed to an object like above) to render each string as an css @import. The example below will grab all scss files that are prefixed with an underscore. Paths that have no Glob syntax (like ! or *) will be added to the import array regardless of wether the file exists. This is intended to give you better control of files that aren't matched in the glob.  Paths starting with a hat character (^) will be rendered at the end of your file. We also can pass in a standard string which will be referred to as the paths relative root. This will be truncated from each path so they are relative to your scss file.
 
 ```js
 gulp.task('sass', () => {
 
   let imports = {
    'vendor/marknotton/doggistyle/dist/_doggistyle.scss',
-   'src/sass/**/(_)*.scss'
+   'settings',
+   '^src/sass/**/(_)*.scss'
   }
 
   return gulp.src('*/**.scss')
@@ -104,10 +106,13 @@ Imports won't actually be rendered anywhere in your scss files. It's all done dy
 
 ```css
 @import 'vendor/marknotton/doggistyle/dist/_doggistyle',
-'symbols',
-'pages/home',
+'settings';
+
+/* All your other CSS */
+
+@import 'pages/home',
 'pages/news',
-'components/gallery/inmages';
+'components/gallery/images';
 ```
 
 ## Injecting both Variables and Imports

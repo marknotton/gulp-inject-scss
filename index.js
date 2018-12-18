@@ -21,7 +21,8 @@ var stream = function(injectMethod){
 let first = true;
 
 let variables = null;
-let imports = null;
+let importAtStart = null;
+let importAtEnd = null;
 let path = null;
 
 module.exports = function(){
@@ -35,7 +36,15 @@ module.exports = function(){
 	// Asign the inject type variable by running through all arguments passed.
 	for (var argument of arguments) {
 		if (Array.isArray(argument)) {
-			imports =  String(getImports(argument));
+
+			// Return all items that are not prefixed with a hat character
+			let start = argument.filter(item => !item.startsWith('^'));
+			importAtStart = String(getImports(start));
+
+			// Return all itesm are are prefixed with a hat character
+			let end = argument.map(item => { return item.startsWith('^') ? item.replace('^', '') : false }).filter(item => item);
+			importAtEnd = String(getImports(end));
+
 		} else if (typeof argument != 'string') {
 			variables = String(getVariables(argument));
 		}
@@ -44,7 +53,7 @@ module.exports = function(){
 	// Return Stream Data --------------------------------------------------------
 
 	return stream(function(fileContents){
-		return variables + imports + fileContents;
+		return variables + importAtStart + fileContents + importAtEnd;
 	});
 }
 
