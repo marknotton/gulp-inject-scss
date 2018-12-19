@@ -85,6 +85,8 @@ $themes : (
 
 Pass an array of strings (as-apposed to an object like above) to render each string as an css @import. The example below will grab all scss files that are prefixed with an underscore. Paths that have no Glob syntax (like ! or *) will be added to the import array regardless of wether the file exists. This is intended to give you better control of files that aren't matched in the glob.  Paths starting with a hat character (^) will be rendered at the end of your file. We also can pass in a standard string which will be referred to as the paths relative root. This will be truncated from each path so they are relative to your scss file.
 
+Passing 'true' will log out the debug of the imports and variables. Showing you what's actually being included.
+
 ```js
 gulp.task('sass', () => {
 

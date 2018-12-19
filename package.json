@@ -1,6 +1,6 @@
 {
   "name": "@marknotton/inject-scss",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Inject Javascript variables into your SASS/SCSS during the Gulp task within pipes.",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,8 @@
   ],
 	"dependencies": {
 		"event-stream": "3.3.4",
-		"fast-glob": "^2.2.4"
+		"fast-glob": "^2.2.4",
+		"@marknotton/lumberjack": "^1.1.1"
 	},
   "author": "Mark Notton",
   "license": "MIT",

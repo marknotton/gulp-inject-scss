@@ -6,6 +6,7 @@
 
 const es   = require('event-stream');
 const glob = require("fast-glob");
+const log = require('@marknotton/lumberjack');
 
 var stream = function(injectMethod){
   return es.map(function (file, cb) {
@@ -24,6 +25,7 @@ let variables = null;
 let importAtStart = null;
 let importAtEnd = null;
 let path = null;
+let debug = false;
 
 module.exports = function(){
 
@@ -45,9 +47,23 @@ module.exports = function(){
 			let end = argument.map(item => { return item.startsWith('^') ? item.replace('^', '') : false }).filter(item => item);
 			importAtEnd = String(getImports(end));
 
+		} else if (typeof argument == 'boolean') {
+
+			debug = argument;
+
 		} else if (typeof argument != 'string') {
+
 			variables = String(getVariables(argument));
+
 		}
+	}
+
+	if ( debug ) {
+		log('Variables', variables);
+		log('Imported at start', importAtStart);
+		log('Imported at end', importAtEnd);
+
+		log.render();
 	}
 
 	// Return Stream Data --------------------------------------------------------
