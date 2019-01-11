@@ -15,7 +15,7 @@ const injectScss = require('@marknotton/inject-scss')
 
 Basically this uses the same principle as [Postilabs](https://github.com/positlabs/inject-scss#readme) Inject SCSS project, only this variation works within Gulp pipes. So you can inject variables or imports directly before your SCSS compilation.
 
-You could use this to respect asset paths that differ between development and production environments for example. Or keep unit sizes consistent between Javascript and CSS. Or maybe you just need to define a special custom property bespoke to your project. You can even refer to Globs when importing files, which means you can eliminate the need to import all your modular css files at the start of your scss.
+You could use this to inject asset paths that differ between development and production environments for example. Or keep unit sizes or other variables consistent between Javascript and CSS. Or maybe you just need to define a special custom property bespoke to your project. You can also refer to Globs when importing files, which means you can eliminate the need to import all your modular css files at the start of your scss and have them automatically inject everything.
 
 ## Injecting Variables
 
@@ -24,14 +24,16 @@ Pass an associative array where the keys are the css properties and the values a
 ```js
 gulp.task('sass', () => {
 
-  let variables = {
-   'images':'"../assets/images/"',
-   'max-height':'100vh',
-   'browser-version':11
+  let settings = {
+	  variables = {
+	   'images':'"../assets/images/"',
+	   'max-height':'100vh',
+	   'browser-version':11
+	  }
   }
 
   return gulp.src('*/**.scss')
-  .pipe(injectScss(variables))
+  .pipe(injectScss(settings))
   .pipe(gulpsass({outputStyle: 'compressed'}))
   .pipe(gulp.dest("cssfile.css"))
 });
@@ -59,13 +61,15 @@ You can also pass in nested objects, which will resolve to a Sass Map.
 
 ```js
 
-let variables = {
-  'images':'"../assets/images/"',
-  'max-height':'100vh',
-  'browser-version':11,
-  'themes' : {
-    'primary' : '#FFF8DC',
-    'secondary' : '#EFF0F1'
+let settings = {
+  variables = {
+    'images':'"../assets/images/"',
+    'max-height':'100vh',
+    'browser-version':11,
+    'themes' : {
+      'primary' : '#FFF8DC',
+      'secondary' : '#EFF0F1'
+    }
   }
 }
 ```
@@ -83,21 +87,23 @@ $themes : (
 
 ## Injecting Imports
 
-Pass an array of strings (as-apposed to an object like above) to render each string as an css @import. The example below will grab all scss files that are prefixed with an underscore. Paths that have no Glob syntax (like ! or *) will be added to the import array regardless of wether the file exists. This is intended to give you better control of files that aren't matched in the glob.  Paths starting with a hat character (^) will be rendered at the end of your file. We also can pass in a standard string which will be referred to as the paths relative root. This will be truncated from each path so they are relative to your scss file.
+Pass an array of strings (as-apposed to an object like above) to render each string as an css @import. The example below will grab all scss files that are prefixed with an underscore. Paths that have no Glob syntax (like ! or *) will be added to the import array regardless of wether the file exists. This is intended to give you better control of files that aren't matched in the glob.  **Paths starting with a hat character (^) will be rendered at the end of your file.**
 
 Passing 'true' will log out the debug of the imports and variables. Showing you what's actually being included.
 
 ```js
 gulp.task('sass', () => {
 
-  let imports = {
-   'vendor/marknotton/doggistyle/dist/_doggistyle.scss',
-   'settings',
-   '^src/sass/**/(_)*.scss'
+  let setttings = {
+    imports = {
+      'vendor/marknotton/doggistyle/dist/_doggistyle.scss',
+      'settings',
+      '^src/sass/**/(_)*.scss'
+    }
   }
 
   return gulp.src('*/**.scss')
-  .pipe(injectScss(imports, 'src/sass'))
+  .pipe(injectScss(setttings))
   .pipe(gulpsass({outputStyle: 'compressed'}))
   .pipe(gulp.dest("cssfile.css"))
 });
@@ -121,5 +127,21 @@ Imports won't actually be rendered anywhere in your scss files. It's all done dy
 
 To use both injection methods, you can simply include an array for imports and an object for variables in any order.
 ```js
-.pipe(injectScss(imports, variables, 'src/sass'))
+.pipe(injectScss({ variables : {...}, imports : {...} ))
+```
+## Debug
+Passing a `true` will render out some additional data to help you see what's actually being injected
+```js
+.pipe(injectScss({ variables : {...}, imports : {...} ), true)
+```
+## Special Files
+The settings object should include a 'variables' and 'imports' key to inject their respective options. These are global for all files that get rendered out. But you can also merge in a special set of options bespoke to a particular file. If the sass file in the stream matches the nested key name, then the additional variables/imports will be merged into the global variables/imports too.
+```js
+.pipe(injectScss({
+  variables : {...},
+  imports : {...},
+  emailer : { variables : {
+    'max-width' : '600px'
+  }}
+ })
 ```

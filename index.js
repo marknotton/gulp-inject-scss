@@ -6,12 +6,13 @@
 
 const es   = require('event-stream');
 const glob = require("fast-glob");
-const log = require('@marknotton/lumberjack');
+const log  = require('@marknotton/lumberjack');
+const path = require('path');
 
 var stream = function(injectMethod){
-  return es.map(function (file, cb) {
+  return es.map((file, cb) => {
     try {
-      file.contents = new Buffer( injectMethod( String(file.contents) ));
+      file.contents = new Buffer( injectMethod( String(file.contents), path.basename(file.path) ));
     } catch (err) {
 			console.warn('Error with Gulp Inject SCSS', err)
     }
@@ -19,60 +20,90 @@ var stream = function(injectMethod){
   });
 };
 
-let first = true;
-
-let variables = null;
-let importAtStart = null;
-let importAtEnd = null;
-let path = null;
-let debug = false;
-
 module.exports = function(){
 
 	if (arguments.length == 0) {
 		return '';
 	}
 
-	path = String(Object.values(arguments).filter(argument => typeof argument == 'string'));
+	let settings = arguments[0];
 
-	// Asign the inject type variable by running through all arguments passed.
-	for (var argument of arguments) {
-		if (Array.isArray(argument)) {
+	let debug = String(Object.values(arguments).filter(argument => typeof argument == 'boolean'));
 
-			// Return all items that are not prefixed with a hat character
-			let start = argument.filter(item => !item.startsWith('^'));
-			importAtStart = String(getImports(start));
-
-			// Return all itesm are are prefixed with a hat character
-			let end = argument.map(item => { return item.startsWith('^') ? item.replace('^', '') : false }).filter(item => item);
-			importAtEnd = String(getImports(end));
-
-		} else if (typeof argument == 'boolean') {
-
-			debug = argument;
-
-		} else if (typeof argument != 'string') {
-
-			variables = String(getVariables(argument));
-
-		}
-	}
+	let {variables, start, end} = getData(settings)
 
 	if ( debug ) {
 		log('Variables', variables);
-		log('Imported at start', importAtStart);
-		log('Imported at end', importAtEnd);
-
+		log('Imported at start', start);
+		log('Imported at end', end);
 		log.render();
 	}
 
 	// Return Stream Data --------------------------------------------------------
 
-	return stream(function(fileContents){
-		return variables + importAtStart + fileContents + importAtEnd;
+	return stream(function(contents, filename)  {
+
+		let result = variables + start + contents + end;
+
+		filename = filename.replace('.scss', '');
+
+		// If there is a bepoke nested object in the settings whose key matches
+		// the same as the filename, apply an additional variables/import.
+
+		if ( filename in settings) {
+
+			let {variables, start, end} = getData(settings[filename]);
+
+			// Append the new variables/imports around the global results
+			result = variables + start + result + end;
+
+			if ( debug ) {
+				log('[' + filename + '] Variables', variables);
+				log('[' + filename + '] Imported at start', start);
+				log('[' + filename + '] Imported at end', end);
+				log.render();
+			}
+
+		}
+		return result ;
+
 	});
 }
 
+
+// Get the Variable, Start Imports and End Imports -----------------------------
+
+function getData(settings) {
+
+	let results = { variables : '', start : '', end : '' };
+
+	if ( typeof settings == 'object') {
+
+		var { variables, imports } = settings;
+
+		if ( typeof variables !== 'undefined'  ) {
+
+			// Return all the variables as a string
+			results['variables'] = getVariables(variables);
+
+		}
+
+		if ( typeof imports !== 'undefined') {
+
+			// Return all items that are not prefixed with a hat character
+			results['start'] = getImports(imports.filter(item => !item.startsWith('^')));
+
+			// Return all items that are prefixed with a hat character
+			results['end'] = getImports(imports.map(item => {
+				return item.startsWith('^') ? item.replace('^', '') : false
+			}).filter(item => item));
+
+		}
+
+	}
+
+	return results;
+}
 
 // Manage Variables ----------------------------------------------------------
 
@@ -82,7 +113,7 @@ function getVariables(variables) {
 		return '';
 	}
 
-	return Object.keys(variables).map(key => {
+	return String(Object.keys(variables).map(key => {
 
 		let value = variables[key];
 		let result = null;
@@ -114,7 +145,7 @@ function getVariables(variables) {
 
 		return `$${key}: ${result};`;
 
-	}).join(' ')
+	}).join(' '))
 
 }
 
@@ -123,16 +154,20 @@ function getVariables(variables) {
 function getImports(imports) {
 
 	let files = glob.sync(imports, {
-		transform : (file) => file.replace(path, '').replace('_','').split('.').slice(0, -1).join('.')
+		transform : (file) => file.replace('_','').split('.').slice(0, -1).join('.')
 	});
 
 	let noneGlobbedImports = imports.filter(file => !(/(\!|\*)/.test(file)));
 
 	files = [...noneGlobbedImports, ...files];
 
+	if ( !files.length ) {
+		return '';
+	}
+
 	let importString = "@import '" + files.join("', '") + "';"
 
-	return importString;
+	return String(importString);
 
 
 }
