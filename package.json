@@ -1,6 +1,6 @@
 {
   "name": "@marknotton/inject-scss",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Inject Javascript variables into your SASS/SCSS during the Gulp task within pipes.",
   "main": "index.js",
   "scripts": {

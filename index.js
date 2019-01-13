@@ -32,40 +32,45 @@ module.exports = function(){
 
 	let {variables, start, end} = getData(settings)
 
+	let globalVariables = variables
+	let globalStart = start
+	let globalEnd = end
+
 	if ( debug ) {
-		log('Variables', variables);
-		log('Imported at start', start);
-		log('Imported at end', end);
-		log.render();
+		log('Variables', variables)
+		log('Imported at start', start)
+		log('Imported at end', end)
+		log.render()
 	}
 
 	// Return Stream Data --------------------------------------------------------
 
 	return stream(function(contents, filename)  {
 
-		let result = variables + start + contents + end;
+		let result = globalVariables + globalStart + contents + globalEnd
 
-		filename = filename.replace('.scss', '');
+		filename = filename.replace('.scss', '')
 
 		// If there is a bepoke nested object in the settings whose key matches
 		// the same as the filename, apply an additional variables/import.
 
 		if ( filename in settings) {
 
-			let {variables, start, end} = getData(settings[filename]);
+			let {variables, start, end} = getData(settings[filename])
 
 			// Append the new variables/imports around the global results
-			result = variables + start + result + end;
+			result = globalVariables + variables + globalStart + start + contents + globalEnd + end
 
 			if ( debug ) {
-				log('[' + filename + '] Variables', variables);
-				log('[' + filename + '] Imported at start', start);
-				log('[' + filename + '] Imported at end', end);
-				log.render();
+				log('[' + filename + '] Variables', variables)
+				log('[' + filename + '] Imported at start', start)
+				log('[' + filename + '] Imported at end', end)
+				log.render()
 			}
 
 		}
-		return result ;
+
+		return result
 
 	});
 }
